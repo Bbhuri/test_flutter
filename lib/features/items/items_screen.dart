@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:provider/provider.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import 'package:my_app/data/models/item_model.dart';
 import 'package:my_app/providers/item_provider.dart';
@@ -13,6 +13,8 @@ class ItemsScreen extends StatefulWidget {
 }
 
 class _ItemsScreenState extends State<ItemsScreen> {
+  String searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -36,31 +38,34 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 children: [
                   Row(
                     children: [
-                      Image.asset('assets/logo_outline.png'),
-                      Text(
+                      Image.asset('assets/logo_outline.png', height: 28),
+                      const SizedBox(width: 8),
+                      const Text(
                         'Inventory Management',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
                       ),
                     ],
                   ),
                   Text(
                     'Manage your inventory items',
-                    style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                   ),
                 ],
               ),
+              // ➕ Add item button
               ShadButton(
                 onPressed: () {},
-                leading: Icon(Icons.add, color: Colors.white, size: 16),
+                leading: const Icon(Icons.add, color: Colors.white, size: 16),
                 child: const Text('Add Item'),
               ),
             ],
           ),
         ),
-        // backgroundColor: Colors.white,
-        // foregroundColor: Colors.black,
-        // elevation: 0.5,
       ),
+      // 🧱 Main content
       body: Consumer<ItemProvider>(
         builder: (context, itemProvider, child) {
           if (itemProvider.isLoading) {
@@ -79,6 +84,14 @@ class _ItemsScreenState extends State<ItemsScreen> {
           }
 
           final List<ItemModel> items = itemProvider.itemData!;
+
+          // 🧩 Filtering logic
+          final filteredItems = items.where((item) {
+            final datas =
+                searchQuery.isEmpty ||
+                item.itemName.toLowerCase().contains(searchQuery.toLowerCase());
+            return datas;
+          }).toList();
 
           return Padding(
             padding: const EdgeInsets.symmetric(

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -34,7 +33,6 @@ class ItemProvider with ChangeNotifier {
 
       final response = await _apiService.get(uri, queryParams: params);
       if (response['statusCode'] == 200) {
-        print(response['data']);
         final List<ItemModel> items = itemListFromJson(response['data']);
         _itemData = items;
         // print(items);

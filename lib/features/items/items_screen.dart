@@ -1,7 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-
 import 'package:my_app/data/models/item_model.dart';
 import 'package:my_app/providers/item_provider.dart';
 
@@ -14,18 +14,40 @@ class ItemsScreen extends StatefulWidget {
 
 class _ItemsScreenState extends State<ItemsScreen> {
   String searchQuery = '';
+  Timer? _debounce;
+  final Set<int> _selectedItems = {};
 
   @override
   void initState() {
     super.initState();
+    // 🧭 Fetch data once when widget mounts
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final itemProvider = Provider.of<ItemProvider>(context, listen: false);
-      itemProvider.fetchItemsData(context);
+      final itemProvider = context.read<ItemProvider>();
+      itemProvider.fetchItemsData(context, '');
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() => searchQuery = value);
+
+    // 🕒 Debounce search to avoid multiple rebuilds
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      final itemProvider = context.read<ItemProvider>();
+      itemProvider.fetchItemsData(context, searchQuery);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final itemProvider = context.watch<ItemProvider>();
+
     return Scaffold(
       appBar: AppBar(
         title: Padding(
@@ -55,7 +77,6 @@ class _ItemsScreenState extends State<ItemsScreen> {
                   ),
                 ],
               ),
-              // ➕ Add item button
               ShadButton(
                 onPressed: () {},
                 leading: const Icon(Icons.add, color: Colors.white, size: 16),
@@ -65,117 +86,175 @@ class _ItemsScreenState extends State<ItemsScreen> {
           ),
         ),
       ),
+
       // 🧱 Main content
-      body: Consumer<ItemProvider>(
-        builder: (context, itemProvider, child) {
-          if (itemProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (itemProvider.itemData == null || itemProvider.itemData!.isEmpty) {
-            return Center(
-              child: Text(
-                itemProvider.errorMessage.isNotEmpty
-                    ? itemProvider.errorMessage
-                    : 'No items found',
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            );
-          }
-
-          final List<ItemModel> items = itemProvider.itemData!;
-
-          // 🧩 Filtering logic
-          final filteredItems = items.where((item) {
-            final datas =
-                searchQuery.isEmpty ||
-                item.itemName.toLowerCase().contains(searchQuery.toLowerCase());
-            return datas;
-          }).toList();
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 40.0,
-              vertical: 20.0,
-            ),
-            child: Column(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+        child: Column(
+          children: [
+            Row(
               children: [
-                Card(
-                  elevation: 1,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search by Item name, Category, or Status...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    onChanged: _onSearchChanged,
                   ),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      headingRowColor: MaterialStateProperty.all(
-                        Colors.grey.shade100,
+                ),
+                //Delete Selected Button
+                const SizedBox(width: 16),
+                // ShadButton.destructive(
+                //   onPressed: _selectedItems.isEmpty
+                //       ? null
+                //       : () {
+                //           // Implement delete selected items logic
+                //         },
+                //   child: const Text('Delete Selected'),
+                // ),
+              ],
+            ),
+
+            // 🔍 Search bar
+            const SizedBox(height: 20),
+
+            // 📦 Data Table
+            Expanded(
+              child: Builder(
+                builder: (_) {
+                  if (itemProvider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (itemProvider.itemData == null ||
+                      itemProvider.itemData!.isEmpty) {
+                    return Center(
+                      child: Text(
+                        itemProvider.errorMessage.isNotEmpty
+                            ? itemProvider.errorMessage
+                            : 'No items found',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
                       ),
-                      headingTextStyle: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                      border: TableBorder.all(
-                        color: Colors.grey.shade200,
-                        width: 1,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      columns: const [
-                        DataColumn(label: Text('ID')),
-                        DataColumn(label: Text('Item Name')),
-                        DataColumn(label: Text('SKU')),
-                        DataColumn(label: Text('Category')),
-                        DataColumn(label: Text('Quantity')),
-                        DataColumn(label: Text('Price')),
-                        DataColumn(label: Text('Status')),
-                      ],
-                      rows: items
-                          .map(
-                            (item) => DataRow(
-                              color: MaterialStateProperty.resolveWith<Color?>(
-                                (states) => items.indexOf(item) % 2 == 0
-                                    ? Colors.white
-                                    : Colors.grey.shade50,
+                    );
+                  }
+
+                  final items = itemProvider.itemData!;
+
+                  return Card(
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        headingRowColor: MaterialStateProperty.all(
+                          Colors.grey.shade100,
+                        ),
+                        headingTextStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                        border: TableBorder.all(
+                          color: Colors.grey.shade200,
+                          width: 1,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        columns: [
+                          DataColumn(
+                            label: Checkbox(
+                              value:
+                                  _selectedItems.length == items.length &&
+                                  items.isNotEmpty,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  if (value == true) {
+                                    _selectedItems.addAll(
+                                      items.map((e) => e.id),
+                                    );
+                                  } else {
+                                    _selectedItems.clear();
+                                  }
+                                });
+                              },
+                            ),
+                          ),
+
+                          DataColumn(label: Text('Item Name')),
+                          DataColumn(label: Text('SKU')),
+                          DataColumn(label: Text('Category')),
+                          DataColumn(label: Text('Quantity')),
+                          DataColumn(label: Text('Price')),
+                          DataColumn(label: Text('Status')),
+                        ],
+                        rows: items.map((item) {
+                          final isSelected = _selectedItems.contains(item.id);
+
+                          return DataRow(
+                            color: MaterialStateProperty.resolveWith<Color?>(
+                              (states) => items.indexOf(item) % 2 == 0
+                                  ? Colors.white
+                                  : Colors.grey.shade50,
+                            ),
+                            cells: [
+                              DataCell(
+                                Checkbox(
+                                  value: isSelected,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      if (value == true) {
+                                        _selectedItems.add(item.id);
+                                      } else {
+                                        _selectedItems.remove(item.id);
+                                      }
+                                    });
+                                  },
+                                ),
                               ),
-                              cells: [
-                                DataCell(Text(item.id.toString())),
-                                DataCell(Text(item.itemName)),
-                                DataCell(Text(item.sku)),
-                                DataCell(Text(item.category ?? '-')),
-                                DataCell(Text(item.quantity.toString())),
-                                DataCell(Text(item.price.toStringAsFixed(2))),
-                                DataCell(
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: _statusColor(
-                                        item.status,
-                                      ).withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      item.status.value,
-                                      style: TextStyle(
-                                        color: _statusColor(item.status),
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                              DataCell(Text(item.itemName)),
+                              DataCell(Text(item.sku)),
+                              DataCell(Text(item.category ?? '-')),
+                              DataCell(Text(item.quantity.toString())),
+                              DataCell(Text(item.price.toStringAsFixed(2))),
+                              DataCell(
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _statusColor(
+                                      item.status,
+                                    ).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    item.status.value,
+                                    style: TextStyle(
+                                      color: _statusColor(item.status),
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                          )
-                          .toList(),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
                     ),
-                  ),
-                ),
-              ],
+                  );
+                },
+              ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

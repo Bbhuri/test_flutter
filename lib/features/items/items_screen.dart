@@ -174,99 +174,113 @@ class _ItemsScreenState extends State<ItemsScreen> {
                     ),
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        headingRowColor: MaterialStateProperty.all(
-                          Colors.grey.shade100,
-                        ),
-                        headingTextStyle: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                        border: TableBorder.all(
-                          color: Colors.grey.shade200,
-                          width: 1,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        columns: [
-                          DataColumn(
-                            label: Checkbox(
-                              value:
-                                  _selectedItems.length == items.length &&
-                                  items.isNotEmpty,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  if (value == true) {
-                                    _selectedItems.addAll(
-                                      items.map((e) => e.id),
-                                    );
-                                  } else {
-                                    _selectedItems.clear();
-                                  }
-                                });
-                              },
-                            ),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical, // vertical scroll
+                        child: DataTable(
+                          headingRowColor: MaterialStateProperty.all(
+                            Colors.grey.shade100,
                           ),
 
-                          DataColumn(label: Text('Item Name')),
-                          DataColumn(label: Text('SKU')),
-                          DataColumn(label: Text('Category')),
-                          DataColumn(label: Text('Quantity')),
-                          DataColumn(label: Text('Price')),
-                          DataColumn(label: Text('Status')),
-                        ],
-                        rows: items.map((item) {
-                          final isSelected = _selectedItems.contains(item.id);
-
-                          return DataRow(
-                            color: MaterialStateProperty.resolveWith<Color?>(
-                              (states) => items.indexOf(item) % 2 == 0
-                                  ? Colors.white
-                                  : Colors.grey.shade50,
-                            ),
-                            cells: [
-                              DataCell(
-                                Checkbox(
-                                  value: isSelected,
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      if (value == true) {
-                                        _selectedItems.add(item.id);
-                                      } else {
-                                        _selectedItems.remove(item.id);
-                                      }
-                                    });
-                                  },
-                                ),
+                          headingTextStyle: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                          border: TableBorder.all(
+                            color: Colors.grey.shade200,
+                            width: 1,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          columns: [
+                            DataColumn(
+                              label: Checkbox(
+                                value:
+                                    _selectedItems.length == items.length &&
+                                    items.isNotEmpty,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    if (value == true) {
+                                      _selectedItems.addAll(
+                                        items.map((e) => e.id),
+                                      );
+                                    } else {
+                                      _selectedItems.clear();
+                                    }
+                                  });
+                                },
                               ),
-                              DataCell(Text(item.itemName)),
-                              DataCell(Text(item.sku)),
-                              DataCell(Text(item.category ?? '-')),
-                              DataCell(Text(item.quantity.toString())),
-                              DataCell(Text(item.price.toStringAsFixed(2))),
-                              DataCell(
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
+                            ),
+
+                            DataColumn(label: Text('Item Name')),
+                            DataColumn(label: Text('SKU')),
+                            DataColumn(label: Text('Category')),
+                            DataColumn(label: Text('Quantity')),
+                            DataColumn(label: Text('Price')),
+                            DataColumn(label: Text('Status')),
+                          ],
+                          rows: items.map((item) {
+                            final isSelected = _selectedItems.contains(item.id);
+
+                            return DataRow(
+                              color: MaterialStateProperty.resolveWith<Color?>(
+                                (states) => items.indexOf(item) % 2 == 0
+                                    ? Colors.white
+                                    : Colors.grey.shade50,
+                              ),
+                              onSelectChanged: (selected) {
+                                if (selected == true) {
+                                  pushWithAnimation(
+                                    context,
+                                    ManageItemScreen(
+                                      item: item,
+                                    ), // pass current item to edit
+                                  );
+                                }
+                              },
+                              cells: [
+                                DataCell(
+                                  Checkbox(
+                                    value: isSelected,
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        if (value == true) {
+                                          _selectedItems.add(item.id);
+                                        } else {
+                                          _selectedItems.remove(item.id);
+                                        }
+                                      });
+                                    },
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: _statusColor(
-                                      item.status,
-                                    ).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    item.status.value,
-                                    style: TextStyle(
-                                      color: _statusColor(item.status),
-                                      fontWeight: FontWeight.w600,
+                                ),
+                                DataCell(Text(item.itemName)),
+                                DataCell(Text(item.sku)),
+                                DataCell(Text(item.category ?? '-')),
+                                DataCell(Text(item.quantity.toString())),
+                                DataCell(Text(item.price.toStringAsFixed(2))),
+                                DataCell(
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: _statusColor(
+                                        item.status,
+                                      ).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      item.status.value,
+                                      style: TextStyle(
+                                        color: _statusColor(item.status),
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          );
-                        }).toList(),
+                              ],
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                   );

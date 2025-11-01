@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:my_app/core/routes/push_route.dart';
+import 'package:my_app/features/items/manage_item_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:my_app/data/models/item_model.dart';
@@ -44,6 +46,18 @@ class _ItemsScreenState extends State<ItemsScreen> {
     });
   }
 
+  Future<void> _deleteSelectedItems() async {
+    final itemProvider = context.read<ItemProvider>();
+    for (final id in _selectedItems) {
+      await itemProvider.deleteItem(context, id);
+    }
+    setState(() {
+      _selectedItems.clear();
+    });
+    // Refresh data after deletion
+    await itemProvider.fetchItemsData(context, searchQuery);
+  }
+
   @override
   Widget build(BuildContext context) {
     final itemProvider = context.watch<ItemProvider>();
@@ -78,7 +92,11 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 ],
               ),
               ShadButton(
-                onPressed: () {},
+                onPressed: () {
+                  // 👇 Navigate with slide animation
+                  pushWithAnimation(context, const ManageItemScreen());
+                },
+
                 leading: const Icon(Icons.add, color: Colors.white, size: 16),
                 child: const Text('Add Item'),
               ),
@@ -106,16 +124,18 @@ class _ItemsScreenState extends State<ItemsScreen> {
                     onChanged: _onSearchChanged,
                   ),
                 ),
-                //Delete Selected Button
-                const SizedBox(width: 16),
-                // ShadButton.destructive(
-                //   onPressed: _selectedItems.isEmpty
-                //       ? null
-                //       : () {
-                //           // Implement delete selected items logic
-                //         },
-                //   child: const Text('Delete Selected'),
-                // ),
+                const SizedBox(width: 20),
+                Visibility(
+                  visible: _selectedItems.isNotEmpty,
+                  child: ShadButton.destructive(
+                    onPressed: _selectedItems.isEmpty
+                        ? null
+                        : () {
+                            _deleteSelectedItems();
+                          },
+                    child: const Text('Delete Selected'),
+                  ),
+                ),
               ],
             ),
 

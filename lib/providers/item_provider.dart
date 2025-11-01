@@ -61,13 +61,16 @@ class ItemProvider with ChangeNotifier {
   }
 
   Future<void> deleteItem(BuildContext context, int itemId) async {
+    print('Deleting item with ID: $itemId');
     _isLoading = true;
     notifyListeners(); // Notify listeners that loading has started
     try {
       final response = await _apiService.delete('/items/$itemId');
+      print(response);
       final statusCode = response['statusCode'].toString();
       final responseError = response['message'].toString();
       print(response);
+
       if (statusCode != "200") {
         // Handle other errors
         _errorMessage = 'Delete Item failed';

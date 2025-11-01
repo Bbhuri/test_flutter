@@ -50,6 +50,27 @@ class ApiService {
     }
   }
 
+  /// HTTP PATCH Method
+  Future<dynamic> patch(
+    String endpoint,
+    Map<String, dynamic> body, {
+    Map<String, String>? headers,
+  }) async {
+    final url = Uri.parse('$baseUrl$endpoint');
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {'Content-Type': 'application/json', ...?headers},
+        body: jsonEncode(body),
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      throw Exception('PATCH request failed: $e');
+    }
+  }
+
   /// Handle API Response
   dynamic _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 500) {

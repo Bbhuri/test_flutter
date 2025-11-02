@@ -34,7 +34,6 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
   void initState() {
     super.initState();
     final item = widget.item;
-
     _itemNameCtrl = TextEditingController(text: item?.itemName ?? '');
     _skuCtrl = TextEditingController(text: item?.sku ?? '');
     _categoryCtrl = TextEditingController(text: item?.category ?? '');
@@ -139,11 +138,21 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
           if (isEditMode)
             ShadButton.destructive(
               onPressed: _deleteItem,
+              leading: const ImageIcon(
+                AssetImage('assets/trash.png'),
+                color: Colors.white,
+                size: 16,
+              ),
               child: const Text('Delete'),
             ),
           const SizedBox(width: 8),
           ShadButton(
             onPressed: _saveItem,
+            leading: ImageIcon(
+              AssetImage(isEditMode ? 'assets/disk.png' : 'assets/plus.png'),
+              color: Colors.white,
+              size: 16,
+            ),
             child: Text(isEditMode ? 'Save Changes' : 'Create Item'),
           ),
           const SizedBox(width: 16),
@@ -310,10 +319,11 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
                                     key: ValueKey(_status),
                                     initialValue: _status,
                                     onChanged: (value) {
-                                      debugPrint(value);
-                                      setState(() {
-                                        _status = value ?? '';
-                                      });
+                                      if (value == null)
+                                        return; // don’t write an empty string
+                                      setState(
+                                        () => _status = value,
+                                      ); // keep it in state
                                     },
                                   ),
                                 ),
@@ -341,25 +351,22 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .spaceBetween, // 👈 evenly separates left/right
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text('ID: '),
-                                          Text(
-                                            '${widget.item?.id.toString() ?? "New Item"}',
-                                          ),
+                                          Text('${widget.item?.id.toString()}'),
                                         ],
                                       ),
                                       Divider(
                                         color: Colors.grey.shade300,
-                                        thickness: 1, // line thickness
-                                        height:
-                                            24, // space above and below the line
+                                        thickness: 1,
+                                        height: 24,
                                       ),
 
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .spaceBetween, // 👈 evenly separates left/right
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
 
                                         children: [
                                           Text('Total Value: '),
@@ -370,9 +377,8 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
                                       ),
                                       Divider(
                                         color: Colors.grey.shade300,
-                                        thickness: 1, // line thickness
-                                        height:
-                                            24, // space above and below the line
+                                        thickness: 1,
+                                        height: 24,
                                       ),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment
@@ -431,9 +437,8 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
                                           height: 24,
                                         ),
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment
-                                              .spaceBetween, // 👈 evenly separates left/right
-
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text('Quantity: '),
                                             Text(
@@ -444,8 +449,8 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
                                           ],
                                         ),
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment
-                                              .spaceBetween, // 👈 evenly separates left/right
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
 
                                           children: [
                                             Text('Price: '),
@@ -457,8 +462,8 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
                                           ],
                                         ),
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment
-                                              .spaceBetween, // 👈 evenly separates left/right
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text('Total Value: '),
                                             Text(
@@ -475,16 +480,38 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
                                     decoration: BoxDecoration(
                                       color: const Color.fromARGB(
                                         255,
-                                        83,
-                                        132,
-                                        238,
-                                      ), // 👈 light grey background
-                                      borderRadius: BorderRadius.circular(
-                                        8,
-                                      ), // optional rounded corners
+                                        208,
+                                        223,
+                                        255,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          100,
+                                          116,
+                                          255,
+                                        ),
+                                      ),
                                     ),
-                                    child: Text(
-                                      '💡 Tip: Make sure to fill in all the required fields before creating the item.',
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const ImageIcon(
+                                          AssetImage('assets/information.png'),
+                                          size: 22,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Expanded(
+                                          child: Text(
+                                            'Tip: Make sure to fill in all the required fields before creating the item.',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -525,7 +552,6 @@ class StatusSelect extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 200),
       child: ShadSelect<String>(
         placeholder: const Text('Select status'),
-        // 👇 Populate the dropdown options dynamically from your map
         options: [
           Padding(
             padding: const EdgeInsets.fromLTRB(32, 6, 6, 6),
@@ -542,10 +568,8 @@ class StatusSelect extends StatelessWidget {
             (entry) => ShadOption(value: entry.key, child: Text(entry.value)),
           ),
         ],
-        // 👇 How the selected item is displayed
         selectedOptionBuilder: (context, value) =>
             Text(status[value] ?? 'Select status'),
-        // 👇 Set initial value and handle change
         initialValue: initialValue,
         onChanged: onChanged,
       ),

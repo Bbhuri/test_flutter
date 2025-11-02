@@ -105,7 +105,7 @@ class ItemProvider with ChangeNotifier {
   }
 
   Future<void> updateItem(BuildContext context, ItemModel item) async {
-    print('Updating item: ${item}');
+    print('Updating item: ${item.toJson()}');
     _isLoading = true;
     notifyListeners(); // Notify listeners that loading has started
     try {

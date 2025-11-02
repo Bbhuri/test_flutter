@@ -236,7 +236,6 @@ class _ItemsScreenState extends State<ItemsScreen> {
                                               : Colors.grey.shade50;
                                         },
                                       ),
-                                  // 👇 Clicking the row (not the checkbox) navigates to edit
                                   onSelectChanged: (selected) {
                                     pushWithAnimation(
                                       context,
@@ -244,7 +243,6 @@ class _ItemsScreenState extends State<ItemsScreen> {
                                     );
                                   },
                                   cells: [
-                                    // ✅ Only one checkbox per row (clean)
                                     DataCell(
                                       Checkbox(
                                         value: isSelected,

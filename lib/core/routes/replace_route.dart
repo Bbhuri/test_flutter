@@ -1,20 +1,5 @@
 import 'package:flutter/material.dart';
 
-// void removeAndReplaceWithAnimation(BuildContext context, Widget newScreen) {
-//   Navigator.pushReplacement(
-//     context,
-//     PageRouteBuilder(
-//       pageBuilder: (context, animation, secondaryAnimation) {
-//         return newScreen;
-//       },
-//       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-//         // Animation แบบ fade in
-//         var fadeAnimation = Tween(begin: 0.0, end: 1.0).animate(animation);
-//         return FadeTransition(opacity: fadeAnimation, child: child);
-//       },
-//     ),
-//   );
-// }
 void removeAndReplaceWithAnimation(BuildContext context, Widget newScreen) {
   Navigator.of(context).pushAndRemoveUntil(
     PageRouteBuilder(

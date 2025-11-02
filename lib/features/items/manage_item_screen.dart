@@ -42,7 +42,7 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
       text: item?.quantity.toString() ?? '0',
     );
     _priceCtrl = TextEditingController(text: item?.price.toString() ?? '0.00');
-    _status = item?.status.value ?? 'IN_STOCK';
+    _status = item?.status.value ?? 'In Stock';
   }
 
   @override
@@ -110,9 +110,9 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
   }
 
   final status = {
-    'IN_STOCK': 'In Stock',
-    'LOW_STOCK': 'Low Stock',
-    'OUT_OF_STOCK': 'Out of Stock',
+    'In Stock': 'In Stock',
+    'Low Stock': 'Low Stock',
+    'Out of Stock': 'Out of Stock',
   };
 
   @override
@@ -530,9 +530,9 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
 }
 
 final status = {
-  'IN_STOCK': 'In Stock',
-  'LOW_STOCK': 'Low Stock',
-  'OUT_OF_STOCK': 'Out of Stock',
+  'In Stock': 'In Stock',
+  'Low Stock': 'Low Stock',
+  'Out of Stock': 'Out of Stock',
 };
 
 class StatusSelect extends StatelessWidget {

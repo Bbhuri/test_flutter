@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:my_app/core/routes/push_route.dart';
+import 'package:my_app/features/items/items_screen.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:my_app/data/models/item_model.dart';
 import 'package:provider/provider.dart';
@@ -77,15 +79,13 @@ class _ManageItemScreenState extends State<ManageItemScreen> {
     } else {
       await itemProvider.createItem(context, newItem);
     }
-
-    // Navigator.pop(context);
   }
 
   void _deleteItem() async {
     if (widget.item == null) return;
     final itemProvider = context.read<ItemProvider>();
     await itemProvider.deleteItem(context, widget.item!.id);
-    // Navigator.pop(context);
+    pushWithAnimation(context, const ItemsScreen());
   }
 
   void _calculateTotalValue() {

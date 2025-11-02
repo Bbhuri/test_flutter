@@ -117,7 +117,7 @@ class ItemProvider with ChangeNotifier {
       final statusCode = response['statusCode'].toString();
       final responseError = response['message'].toString();
 
-      if (statusCode != "201") {
+      if (statusCode != "200") {
         // Handle other errors
         _errorMessage = 'Update Item failed';
         ShadAlertDialog.showAlertDialogWarning(
